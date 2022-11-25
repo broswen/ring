@@ -7,11 +7,11 @@
 ### TODO
 
 - [ ] define types for
-    - [ ] config and default config
-    - [ ] env with namespaces
+    - [x] config and default config
+    - [x] env with namespaces
     - [ ] gossip message
-    - [ ] register
-    - [ ] registers
-- [ ] create functions to merge register and registers
-- [ ] handle GET and PUT on nodes with local registers state
-- [ ] handle ratelimited gossip and PATCH with flush
+    - [x] register
+    - [x] registers
+- [x] create functions to merge register and registers
+- [x] handle GET and PUT on nodes with local registers state
+- [x] handle ratelimited gossip and PATCH with flush

@@ -1,5 +1,5 @@
 import {Node, parsePath} from "./node"
-import {LWWRegister, Registers} from "../register/LWWRegister";
+import {Registers} from "../register/LWWRegister";
 
 const env = getMiniflareBindings()
 

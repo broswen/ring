@@ -72,7 +72,7 @@ describe('Registers', () => {
                 value: 'a'
             }
         }
-       expect(mergeRegisters(a, b)).toStrictEqual(a)
+       expect(mergeRegisters(a, b)).toStrictEqual(b)
     })
 })
 

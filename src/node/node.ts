@@ -107,7 +107,7 @@ export class Node implements DurableObject {
         // generate random list of neighbors to gossip with
         const ids = getNeighbors(this.id, this.config.clusterSize)
         // create list of requests
-        const requests = ids.map(id => new Request(nodeURL(id), {body: data}))
+        const requests = ids.map(id => new Request(nodeURL(id), {body: data, method: 'PATCH'}))
         // create list of promises
         const promises = requests.map(async req => {
             const res = await fetch(req)

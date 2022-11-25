@@ -1,4 +1,5 @@
-import Toucan from "toucan-js";
+import Toucan from "toucan-js"
+export {Node} from './node/node'
 
 export interface Config {
 	// how many nodes in the cluster

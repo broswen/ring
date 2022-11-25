@@ -20,6 +20,16 @@ export function parsePath(path: string): {id: string, key: string} {
     return details
 }
 
+export function jsonResponse(body: unknown, status: number, id: string): Response {
+    return new Response(JSON.stringify(body), {
+        status,
+        headers: {
+            'RING-NODE': id,
+            'Content-Type': 'application/json'
+        }
+    })
+}
+
 export class Node implements DurableObject {
     state: DurableObjectState
     env: Env
@@ -57,29 +67,24 @@ export class Node implements DurableObject {
         const url = new URL(request.url)
         const {id, key} = parsePath(url.pathname)
         this.id = id
-        // GET returns the value of the register at this node
-        //  GET should gossip if the last gossip is old enough
-        // PUT sets the value for the register at this node
-        //  always tries to gossip after updating state
-        // PATCH receives the state from another node, merges it, then returns the local state
         if (request.method === 'GET') {
             const r = this.registers.get(key)
             if (r === undefined) {
-                return new Response('not found', {status: 404})
+                return jsonResponse({error: 'not found'}, 404, this.id)
             }
-            return new Response(JSON.stringify(r))
+            return jsonResponse(JSON.stringify(r), 200, this.id)
         } else if (request.method === 'PUT') {
             const data = await request.text()
             const register = this.registers.set(key, data)
             this.maybeGossip()
             this.state.storage?.put<Registers>('registers', this.registers.registers)
-            return new Response(JSON.stringify(register))
+            return jsonResponse(register, 200, this.id)
         } else if (request.method === 'PATCH') {
             const data = await request.json<Registers>()
             this.registers.merge(data)
-            return new Response(JSON.stringify(this.registers.registers))
+            return jsonResponse(this.registers.registers, 200, this.id)
         }
-        return new Response('not allowed', {status: 405})
+        return jsonResponse({error: 'not allowed'}, 405, this.id)
     }
 
     // maybeGossip attempts to gossip if the node hasn't gossiped in GOSSIP_DELAY

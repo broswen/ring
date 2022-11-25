@@ -1,31 +1,42 @@
 let encoder: TextEncoder | null = null
 
-export function shardLayers(firstLayerCount: number, shardRatio: number): number[] {
-    let shards: number[] = []
-    shards.push(firstLayerCount)
-    while (shards[shards.length - 1] > shardRatio) {
-        shards.push(Math.ceil(shards[shards.length - 1]/shardRatio))
+export function getNeighbors(id: string, clusterSize: number): string[] {
+    // gossip with log2 of the clustersize neighbors
+    const gossipCount = Math.log2(clusterSize)
+    let neighbors: string[] = []
+    // generate list of cluster ids
+    for (let i = 0; i < gossipCount; i++) {
+        // don't gossip with self
+        if (`${i}` === id) continue
+        neighbors.push(`${i}`)
     }
-    return shards
+    // shuffle cluster ids
+    neighbors = shuffle(neighbors)
+    // select log2 clustersize ids
+    neighbors = neighbors.slice(0,gossipCount)
+    return neighbors
 }
 
-export async function shardName(id: string, key: string, layers: number[]): Promise<string> {
-    if (layers.length < 1) {
-        return `${id}`
-    }
-    let name = id
-    let prevShard = await rendezvousHash(key, layers[0])
-    name = name + `:${prevShard}`
+function shuffle(array: string[]): string[] {
+    let currentIndex = array.length,  randomIndex;
 
-    for (let i = 1; i < layers.length; i++) {
-        prevShard = await rendezvousHash(`${prevShard}`, layers[i])
-        name = name + `:${prevShard}`
+    // While there remain elements to shuffle.
+    while (currentIndex != 0) {
+
+        // Pick a remaining element.
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
     }
-    return name
+
+    return array;
 }
 
-export function shardURL(shardName: string, key?: string | null): string {
-    let url = `https://ring.broswen.com/${shardName}`
+export function nodeURL(node: string, key?: string | null): string {
+    let url = `https://ring.broswen.com/${node}`
     if (key) {
         url += '/' + key
     }

@@ -1,38 +1,11 @@
-import {hash, rank, rendezvousHash, shardLayers, shardName, shardURL} from "./sharding";
-
-describe('shardLayers', function () {
-    test('tests', () => {
-        expect(shardLayers(10, 2)).toEqual([10, 5, 3, 2])
-        expect(shardLayers(100, 5)).toEqual([100, 20, 4])
-        expect(shardLayers(120, 5)).toEqual([120, 24, 5])
-    })
-   test('should create with 10 shards per shard', () => {
-       expect(shardLayers(100, 10)).toEqual([100, 10])
-       expect(shardLayers(1000, 10)).toEqual([1000, 100, 10])
-   })
-   test('should create with 5 shards per shard', () => {
-       expect(shardLayers(100, 5)).toEqual([100, 20, 4])
-       expect(shardLayers(30, 5)).toEqual([30, 6, 2])
-   })
-});
-
-describe('shardName', function () {
-   test('should create shard name', async () => {
-       expect(await shardName('shard', '5', [3, 2, 1])).toEqual('shard:0:0:0')
-       expect(await shardName('shard', '5', [10, 5, 2])).toEqual('shard:0:0:0')
-       expect(await shardName('shard', '5', [11, 6, 3])).toEqual('shard:0:0:0')
-       expect(await shardName('shard', '5', [12, 7, 3])).toEqual('shard:0:0:0')
-       expect(await shardName('shard', '5', [100, 50, 4])).toEqual('shard:64:19:0')
-       expect(await shardName('shard', '5', [])).toEqual('shard')
-   })
-});
+import {hash, rank, rendezvousHash, nodeURL} from "./sharding";
 
 describe('shardURL', function () {
     test('should create url with shard name', () => {
-        expect(shardURL('shard:1')).toEqual('https://shard.crystal.broswen.com/shard:1')
+        expect(nodeURL('shard:1')).toEqual('https://ring.broswen.com/shard:1')
     })
     test('should create url with shard name and key', () => {
-        expect(shardURL('shard:1', 'b')).toEqual('https://shard.crystal.broswen.com/shard:1/b')
+        expect(nodeURL('shard:1', 'b')).toEqual('https://ring.broswen.com/shard:1/b')
     })
 })
 

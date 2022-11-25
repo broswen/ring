@@ -1,20 +1,12 @@
-import {shardName, shardURL} from "./sharding/sharding";
 import Toucan from "toucan-js";
 
-export { Counter } from './counter/counter'
 export interface Config {
-	// how many durable objects to shard writes/reads to
-	shardCount: number
-	// how long to wait before flushing updates
-	flushDelay: number
-	// how long to wait before sending another update
-	syncDelay: number
+	// how many nodes in the cluster
+	clusterSize: number
 }
 
 export const DefaultConfig: Config = {
-	shardCount: 10,
-	flushDelay: 5 * 1000,
-	syncDelay: 2 * 1000
+	clusterSize: 10
 }
 
 export interface WorkerAnalyticsNamespace {
@@ -29,14 +21,12 @@ export interface DataPoint {
 
 export interface Env {
 	CONFIG: KVNamespace
-	COUNTER: DurableObjectNamespace
-	COUNTER_DATA: WorkerAnalyticsNamespace
-	WORKER_DATA: WorkerAnalyticsNamespace
+	RING: DurableObjectNamespace
+	NODE_DATA: WorkerAnalyticsNamespace
+	CLUSTER_DATA: WorkerAnalyticsNamespace
 	SENTRY_DSN: string
 	environment: string
 }
-
-const MAIN_SHARD = 'SHARD'
 
 export async function getConfig(env: Env): Promise<Config> {
 	let data = '{}'
@@ -71,4 +61,5 @@ export async function handler(
 
 	const config = await getConfig(env)
 	const url = new URL(request.url)
+	return new Response('ok')
 }

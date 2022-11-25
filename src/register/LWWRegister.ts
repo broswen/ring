@@ -42,6 +42,14 @@ export class LWWRegister {
         }
         return this.registers[key]
     }
+    set(key: string, value: string): Register {
+        const r = {
+            value: value,
+            ts: new Date().getTime()
+        }
+        this.registers[key] = r
+        return r
+    }
     merge(b: Registers) {
         this.registers = mergeRegisters(this.registers, b)
     }

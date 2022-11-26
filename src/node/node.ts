@@ -44,6 +44,7 @@ export class Node implements DurableObject {
     constructor(state: DurableObjectState, env: Env) {
         this.state = state
         this.env = env
+        this.id = this.id.toString()
         this.state.blockConcurrencyWhile(async () => {
             this.registers = new LWWRegister(await this.state.storage?.get<Registers>('registers') ?? {})
             this.config = await getConfig(env)
@@ -72,7 +73,7 @@ export class Node implements DurableObject {
             if (r === undefined) {
                 return jsonResponse({error: 'not found'}, 404, this.id)
             }
-            return jsonResponse(JSON.stringify(r), 200, this.id)
+            return jsonResponse(r, 200, this.id)
         } else if (request.method === 'PUT') {
             const data = await request.text()
             const register = this.registers.set(key, data)

@@ -64,7 +64,11 @@ export async function handler(
 	const config = await getConfig(env)
 	const url = new URL(request.url)
 	const key = url.pathname.slice(1)
-	const nodeId = `${await rendezvousHash(key, config.clusterSize)}`
+	const ip = request.headers.get('cf-connecting-ip')
+	if (key.length < 1) {
+		return jsonResponse({error: 'invalid key'}, 400, '-1')
+	}
+	const nodeId = `${await rendezvousHash(key+ip, config.clusterSize)}`
 	const nodeUrl = nodeURL(nodeId, key)
 	if (request.method === 'GET') {
 		const id = env.RING.idFromName(nodeId)
@@ -73,7 +77,7 @@ export async function handler(
 	} else if (request.method === 'PUT') {
 		const id = env.RING.idFromName(nodeId)
 		const obj = env.RING.get(id)
-		return obj.fetch(new Request(nodeUrl, {body: request.body}))
+		return obj.fetch(new Request(nodeUrl, {body: request.body, method: 'PUT'}))
 	}
 	return jsonResponse({error: 'not allowed'}, 405, '-1')
 }

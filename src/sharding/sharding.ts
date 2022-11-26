@@ -2,10 +2,10 @@ let encoder: TextEncoder | null = null
 
 export function getNeighbors(id: string, clusterSize: number): string[] {
     // gossip with log2 of the clustersize neighbors
-    const gossipCount = Math.log2(clusterSize)
+    const gossipCount = Math.ceil(Math.log2(clusterSize))
     let neighbors: string[] = []
     // generate list of cluster ids
-    for (let i = 0; i < gossipCount; i++) {
+    for (let i = 0; i < clusterSize; i++) {
         // don't gossip with self
         if (`${i}` === id) continue
         neighbors.push(`${i}`)

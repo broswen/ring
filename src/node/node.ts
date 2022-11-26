@@ -125,5 +125,6 @@ export class Node implements DurableObject {
         // wait for all promises
         await Promise.allSettled(promises)
         this.state.storage?.put<Registers>('registers', this.registers.registers)
+        this.env.NODE.put(this.id, JSON.stringify(this.registers.registers))
     }
 }

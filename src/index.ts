@@ -24,6 +24,7 @@ export interface DataPoint {
 
 export interface Env {
 	CONFIG: KVNamespace
+	NODE: KVNamespace
 	RING: DurableObjectNamespace
 	NODE_DATA: WorkerAnalyticsNamespace
 	CLUSTER_DATA: WorkerAnalyticsNamespace

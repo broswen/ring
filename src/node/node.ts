@@ -44,7 +44,6 @@ export class Node implements DurableObject {
     constructor(state: DurableObjectState, env: Env) {
         this.state = state
         this.env = env
-        this.id = this.id.toString()
         this.state.blockConcurrencyWhile(async () => {
             this.registers = new LWWRegister(await this.state.storage?.get<Registers>('registers') ?? {})
             this.config = await getConfig(env)
@@ -68,6 +67,12 @@ export class Node implements DurableObject {
         const url = new URL(request.url)
         const {id, key} = parsePath(url.pathname)
         this.id = id
+
+        const dump = url.searchParams.get('dump')
+        if (dump) {
+            return jsonResponse(this.registers.registers, 200, this.id)
+        }
+
         if (request.method === 'GET') {
             const r = this.registers.get(key)
             if (r === undefined) {

@@ -67,7 +67,7 @@ export async function handler(
 	const key = url.pathname.slice(1)
 	const ip = request.headers.get('cf-connecting-ip')
 	if (key.length < 1) {
-		return jsonResponse({error: 'invalid key'}, 400, '-1')
+		return jsonResponse({error: 'invalid key'}, 400)
 	}
 	const nodeId = `${await rendezvousHash(key+ip, config.clusterSize)}`
 	const nodeUrl = nodeURL(nodeId, key)
@@ -78,7 +78,7 @@ export async function handler(
 	if (dump) {
 		const id = env.RING.idFromName(dump)
 		const obj = env.RING.get(id)
-		return obj.fetch(new Request('https://ring.broswen.com/'+ dump +'/?dump=true', {body: request.body, cf: {cacheTtl: 5}}))
+		return obj.fetch(new Request('https://ring.broswen.com/'+ dump +'/?dump=true', {cf: {cacheTtl: 5}}))
 	}
 
 	if (request.method === 'GET') {
@@ -86,5 +86,5 @@ export async function handler(
 	} else if (request.method === 'PUT') {
 		return obj.fetch(new Request(nodeUrl, {body: request.body, method: 'PUT'}))
 	}
-	return jsonResponse({error: 'not allowed'}, 405, '-1')
+	return jsonResponse({error: 'not allowed'}, 405)
 }

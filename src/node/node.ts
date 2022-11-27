@@ -20,7 +20,7 @@ export function parsePath(path: string): {id: string, key: string} {
     return details
 }
 
-export function jsonResponse(body: unknown, status: number, id: string): Response {
+export function jsonResponse(body: unknown, status: number, id: string = '-1'): Response {
     return new Response(JSON.stringify(body), {
         status,
         headers: {

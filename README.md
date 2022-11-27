@@ -17,3 +17,4 @@ https://www.desmos.com/calculator/bfqckelaxx
 - [x] handle ratelimited gossip and PATCH with flush
 - [ ] handle gossip on GET requests to keep node updated
 - [ ] optimize gossip with protocol buffer format
+- [ ] use lamport timestamp or vector clock instead of local server time

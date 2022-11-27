@@ -78,7 +78,7 @@ export async function handler(
 	if (dump) {
 		const id = env.RING.idFromName(dump)
 		const obj = env.RING.get(id)
-		return obj.fetch(new Request(nodeUrl+'/?dump=true', {body: request.body, cf: {cacheTtl: 5}}))
+		return obj.fetch(new Request('https://ring.broswen.com/'+ dump +'/?dump=true', {body: request.body, cf: {cacheTtl: 5}}))
 	}
 
 	if (request.method === 'GET') {

@@ -1,5 +1,5 @@
 import {Node, parsePath} from "./node"
-import {Registers} from "../register/LWWRegister";
+import {Register, Registers} from "../register/LWWRegister";
 
 const env = getMiniflareBindings()
 
@@ -26,12 +26,67 @@ describe('Node', () => {
         const res = await stub.fetch('https://example.com/id/a')
         expect(res.status).toEqual(200)
     })
-    test('set', async () => {
+    test('put', async () => {
         const id = env.RING.newUniqueId()
         const storage = await getMiniflareDurableObjectStorage(id)
         const stub = env.RING.get(id)
         const res = await stub.fetch('https://example.com/id/a', {method: 'PUT', body: 'a'})
         expect(res.status).toEqual(200)
+        expect((await res.json<Register>()).value).toBe('a')
+    })
+    test('patch', async() => {
+        const id = env.RING.newUniqueId()
+        const storage = await getMiniflareDurableObjectStorage(id)
+        await storage.put<Registers>('registers', {
+            'a': {
+                value: 'a',
+                ts: 1
+            },
+            'b': {
+                value: 'b',
+                ts: 1
+            }
+        })
+        const stub = env.RING.get(id)
+        const res = await stub.fetch('https://example.com/id/a', {method: 'PATCH', body: JSON.stringify({
+                'a': {
+                    value: 'a',
+                    ts: 2
+                },
+                'c': {
+                    value: 'c',
+                    ts: 2
+                }
+            })})
+        expect(res.status).toBe(200)
+        expect(await res.json()).toEqual({
+            'a': {
+                value: 'a',
+                ts: 2
+            },
+            'b': {
+                value: 'b',
+                ts: 1
+            },
+            'c': {
+                value: 'c',
+                ts: 2
+            }
+        })
+        expect(await storage.get<Registers>('registers')).toEqual({
+            'a': {
+                value: 'a',
+                ts: 2
+            },
+            'b': {
+                value: 'b',
+                ts: 1
+            },
+            'c': {
+                value: 'c',
+                ts: 2
+            }
+        })
     })
 
 })

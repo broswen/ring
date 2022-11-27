@@ -88,6 +88,7 @@ export class Node implements DurableObject {
         } else if (request.method === 'PATCH') {
             const data = await request.json<Registers>()
             this.registers.merge(data)
+            this.state.storage?.put<Registers>('registers', this.registers.registers)
             return jsonResponse(this.registers.registers, 200, this.id)
         }
         return jsonResponse({error: 'not allowed'}, 405, this.id)
@@ -109,22 +110,23 @@ export class Node implements DurableObject {
     async gossip(): Promise<void> {
         if (this.id === '') return
         // prerender local registers state
-        const data = JSON.stringify(this.registers.registers)
+        const localState = JSON.stringify(this.registers.registers)
         // generate random list of neighbors to gossip with
         const ids = getNeighbors(this.id, this.config.clusterSize)
         // create list of requests
-        const requests = ids.map(id => new Request(nodeURL(id), {body: data, method: 'PATCH'}))
-        // create list of promises
-        const promises = requests.map(async req => {
-            const res = await fetch(req)
+        const promises = ids.map(async id => {
+            const req = new Request(nodeURL(id), {body: localState, method: 'PATCH'})
+            const nodeId = this.env.RING.idFromName(id)
+            const obj = this.env.RING.get(nodeId)
+            const res = await obj.fetch(req)
             if (!res.ok) return
-            const data = await res.json<Registers>()
-            this.registers.merge(data)
+            const remoteState = await res.json<Registers>()
+            this.registers.merge(remoteState)
             this.lastGossip = new Date().getTime()
         })
-        // wait for all promises
         await Promise.allSettled(promises)
         this.state.storage?.put<Registers>('registers', this.registers.registers)
         this.env.NODE.put(this.id, JSON.stringify(this.registers.registers))
+
     }
 }

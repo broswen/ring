@@ -2,7 +2,7 @@
 
 ![diagram](ring.drawio.png)
 
-
+https://www.desmos.com/calculator/bfqckelaxx
 
 ### TODO
 
@@ -15,3 +15,4 @@
 - [x] create functions to merge register and registers
 - [x] handle GET and PUT on nodes with local registers state
 - [x] handle ratelimited gossip and PATCH with flush
+- [ ] handle gossip on GET requests to keep node updated

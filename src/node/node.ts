@@ -4,6 +4,7 @@ import {getNeighbors, nodeURL} from "../sharding/sharding";
 
 export const FLUSH_DELAY = 5 * 1000
 export const GOSSIP_DELAY = 3 * 1000
+export const DUMP_DELAY = 1 * 1000
 
 export function parsePath(path: string): {id: string, key: string} {
     const details = {
@@ -41,6 +42,8 @@ export class Node implements DurableObject {
     flushTimeout: ReturnType<typeof setTimeout> | undefined
     // the timestamp of the last gossip
     lastGossip: number = 0
+    // the timestamp of the last dump to kv
+    lastDump: number = 0
     constructor(state: DurableObjectState, env: Env) {
         this.state = state
         this.env = env
@@ -89,6 +92,7 @@ export class Node implements DurableObject {
             const data = await request.json<Registers>()
             this.registers.merge(data)
             this.state.storage?.put<Registers>('registers', this.registers.registers)
+            this.kvDump()
             return jsonResponse(this.registers.registers, 200, this.id)
         }
         return jsonResponse({error: 'not allowed'}, 405, this.id)
@@ -103,6 +107,14 @@ export class Node implements DurableObject {
             return
         }
         await this.gossip()
+    }
+
+    // kvDump stores the current registers state in kv for easy debugging
+    async kvDump(): Promise<void> {
+        if (new Date().getTime() - this.lastDump <= DUMP_DELAY) {
+            return
+        }
+        this.env.NODE.put(this.id, JSON.stringify(this.registers.registers))
     }
 
     // gossip picks log(n) neighbors to gossip with and exchange/merge state
@@ -126,7 +138,6 @@ export class Node implements DurableObject {
         })
         await Promise.allSettled(promises)
         this.state.storage?.put<Registers>('registers', this.registers.registers)
-        this.env.NODE.put(this.id, JSON.stringify(this.registers.registers))
-
+        this.kvDump()
     }
 }

@@ -69,7 +69,9 @@ export async function handler(
 	if (key.length < 1) {
 		return jsonResponse({error: 'invalid key'}, 400)
 	}
-	const nodeId = `${await rendezvousHash(key+ip, config.clusterSize)}`
+	// const nodeId = `${await rendezvousHash(key+ip, config.clusterSize)}`
+	// random cluster for testing
+	const nodeId = `${await rendezvousHash(new Date().toString(), config.clusterSize)}`
 	const nodeUrl = nodeURL(nodeId, key)
 	const id = env.RING.idFromName(nodeId)
 	const obj = env.RING.get(id)

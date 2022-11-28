@@ -69,12 +69,6 @@ export async function handler(
 	if (key.length < 1) {
 		return jsonResponse({error: 'invalid key'}, 400)
 	}
-	// const nodeId = `${await rendezvousHash(key+ip, config.clusterSize)}`
-	// random cluster for testing
-	const nodeId = `${await rendezvousHash(new Date().toString(), config.clusterSize)}`
-	const nodeUrl = nodeURL(nodeId, key)
-	const id = env.RING.idFromName(nodeId)
-	const obj = env.RING.get(id)
 
 	const dump = url.searchParams.get('dump')
 	if (dump) {
@@ -84,8 +78,18 @@ export async function handler(
 	}
 
 	if (request.method === 'GET') {
+		// use key + ip for node hash, help distribute reads
+		const nodeId = `${await rendezvousHash(key+ip, config.clusterSize)}`
+		const nodeUrl = nodeURL(nodeId, key)
+		const id = env.RING.idFromName(nodeId)
+		const obj = env.RING.get(id)
 		return obj.fetch(new Request(nodeUrl, {body: request.body, cf: {cacheTtl: 5}}))
 	} else if (request.method === 'PUT') {
+		// use key for node hash, write to the same node for a specific key
+		const nodeId = `${await rendezvousHash(key, config.clusterSize)}`
+		const nodeUrl = nodeURL(nodeId, key)
+		const id = env.RING.idFromName(nodeId)
+		const obj = env.RING.get(id)
 		return obj.fetch(new Request(nodeUrl, {body: request.body, method: 'PUT'}))
 	}
 	return jsonResponse({error: 'not allowed'}, 405)

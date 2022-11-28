@@ -87,6 +87,7 @@ export class Node implements DurableObject {
             if (r === undefined) {
                 return jsonResponse({error: 'not found'}, 404, this.id)
             }
+            this.maybeGossip()
             return jsonResponse(r, 200, this.id)
         } else if (request.method === 'PUT') {
             const data = await request.text()

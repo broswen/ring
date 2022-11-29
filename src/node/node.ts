@@ -1,10 +1,23 @@
 import {Config, DefaultConfig, Env, getConfig} from "../index";
-import {LWWRegister, Registers} from "../register/LWWRegister";
+import {LWWRegister, Register, Registers} from "../register/LWWRegister";
 import {getNeighbors, nodeURL} from "../sharding/sharding";
 
 export const FLUSH_DELAY = 5 * 1000
 export const GOSSIP_DELAY = 3 * 1000
 export const DUMP_DELAY = 1 * 1000
+
+export const REGISTERS_KEY = 'registers'
+
+export async function putNodeData<T>(ns: KVNamespace, nodeId: string, key: string, data: T): Promise<void> {
+    await ns.put(nodeId + ':' + key, JSON.stringify(data))
+}
+
+export async function getNodeData<T>(ns: KVNamespace, nodeId: string, key: string): Promise<T | undefined> {
+    const data = await ns.get(nodeId + ':' + key)
+    if (!data) return undefined
+    const parsedData: T = JSON.parse(data)
+    return parsedData
+}
 
 export function parsePath(path: string): {id: string, key: string} {
     const details = {
@@ -121,7 +134,7 @@ export class Node implements DurableObject {
         if (new Date().getTime() - this.lastDump <= DUMP_DELAY) {
             return
         }
-        this.env.NODE.put(this.id, JSON.stringify(this.registers.registers))
+        await putNodeData(this.env.NODE, this.id, REGISTERS_KEY, this.registers.registers)
     }
 
     // gossip picks log(n) neighbors to gossip with and exchange/merge state

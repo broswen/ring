@@ -19,11 +19,6 @@ type = "analytics_engine"
 name = "NODE_DATA"
 dataset = "RING_NODE_DATA"
 
-[[unsafe.bindings]]
-type = "analytics_engine"
-name = "CLUSTER_DATA"
-dataset = "RING_CLUSTER_DATA"
-
 [[migrations]]
 tag = "v1" # Should be unique for each entry
 new_classes = ["Node"]

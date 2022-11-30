@@ -1,5 +1,6 @@
 import {Node, parsePath} from "./node"
 import {Register, Registers} from "../register/LWWRegister";
+import {Registers as RegistersPB} from "../proto/gossip"
 
 const env = getMiniflareBindings()
 
@@ -48,7 +49,7 @@ describe('Node', () => {
             }
         })
         const stub = env.RING.get(id)
-        const res = await stub.fetch('https://example.com/id/a', {method: 'PATCH', body: JSON.stringify({
+        const data = RegistersPB.encode({registers: {
                 'a': {
                     value: 'a',
                     ts: 2
@@ -57,22 +58,10 @@ describe('Node', () => {
                     value: 'c',
                     ts: 2
                 }
-            })})
+            }}).finish()
+
+        const res = await stub.fetch('https://example.com/id/a', {method: 'PATCH', body: data})
         expect(res.status).toBe(200)
-        expect(await res.json()).toEqual({
-            'a': {
-                value: 'a',
-                ts: 2
-            },
-            'b': {
-                value: 'b',
-                ts: 1
-            },
-            'c': {
-                value: 'c',
-                ts: 2
-            }
-        })
         expect(await storage.get<Registers>('registers')).toEqual({
             'a': {
                 value: 'a',

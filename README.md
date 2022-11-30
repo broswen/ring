@@ -41,6 +41,7 @@ During constant traffic, the keys are replicated between nodes consistently.
 - [x] handle gossip on GET requests to keep node updated
 - [x] optimize gossip with protocol buffer format
 - [ ] optimize gossip by sending only new data
+- [ ] find a better balance for gossiping during reads
 - [ ] analyze total cluster request traffic to scale clusterSize dynamically
 - [ ] use logical clock instead of local clock for last write wins 
   - [x] shard based on key only and use local time, same node local time should be consistent

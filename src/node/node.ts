@@ -1,6 +1,8 @@
 import {Config, DefaultConfig, Env, getConfig} from "../index";
-import {LWWRegister, Register, Registers} from "../register/LWWRegister";
+import {LWWRegister, Registers} from "../register/LWWRegister";
 import {getNeighbors, nodeURL} from "../sharding/sharding";
+import {Registers as RegistersPB} from "../proto/gossip"
+import {IRegistersToRegisters} from "../proto/helpers";
 
 export const FLUSH_DELAY = 5 * 1000
 export const GOSSIP_DELAY = 3 * 1000
@@ -109,8 +111,12 @@ export class Node implements DurableObject {
             this.state.storage?.put<Registers>('registers', this.registers.registers)
             return jsonResponse(register, 200, this.id)
         } else if (request.method === 'PATCH') {
-            const data = await request.json<Registers>()
-            this.registers.merge(data)
+            const data = await request.arrayBuffer()
+            // decode registers from protobuf gossip format
+            const registers: RegistersPB = RegistersPB.decode(new Uint8Array(data))
+            // convert into local interface
+            const r = IRegistersToRegisters(registers)
+            this.registers.merge(r)
             this.state.storage?.put<Registers>('registers', this.registers.registers)
             this.kvDump()
             return jsonResponse(this.registers.registers, 200, this.id)
@@ -141,13 +147,19 @@ export class Node implements DurableObject {
     // it sends all requests asynchronously and merges with each as the are returned
     async gossip(): Promise<void> {
         if (this.id === '') return
-        // prerender local registers state
-        const localState = JSON.stringify(this.registers.registers)
+        const err = RegistersPB.verify(this.registers.registers)
+        if (err) {
+            //TODO capture this in sentry
+            console.log(err)
+            return
+        }
+        // encode registers into protobuf gossip
+        const registers = RegistersPB.encode({registers: this.registers.registers}).finish()
         // generate random list of neighbors to gossip with
         const ids = getNeighbors(this.id, this.config.clusterSize)
         // create list of requests
         const promises = ids.map(async id => {
-            const req = new Request(nodeURL(id), {body: localState, method: 'PATCH'})
+            const req = new Request(nodeURL(id), {body: registers, method: 'PATCH'})
             const nodeId = this.env.RING.idFromName(id)
             const obj = this.env.RING.get(nodeId)
             const res = await obj.fetch(req)

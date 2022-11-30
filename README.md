@@ -17,6 +17,16 @@ The cluster spreads information through a [gossip protocol](https://en.wikipedia
 
 https://www.desmos.com/calculator/bfqckelaxx
 
+![traffic](gossip-traffic.png)
+Gossip (`PATCH`) traffic will eventually reach a maximum with enough requests.
+
+Gossip requests are rate-limited to prevent inter-cluster traffic from using all bandwidth. 
+
+![key-count](key-count.png)
+During constant traffic, the keys are replicated between nodes consistently.
+
+(14:08:00 is when the number of nodes was increased from 10 to 32)
+
 ### TODO
 
 - [ ] define types for

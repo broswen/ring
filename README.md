@@ -29,7 +29,7 @@ https://www.desmos.com/calculator/bfqckelaxx
 - [x] handle GET and PUT on nodes with local registers state
 - [x] handle ratelimited gossip and PATCH with flush
 - [x] handle gossip on GET requests to keep node updated
-- [ ] optimize gossip with protocol buffer format
+- [x] optimize gossip with protocol buffer format
 - [ ] optimize gossip by sending only new data
 - [ ] analyze total cluster request traffic to scale clusterSize dynamically
 - [ ] use logical clock instead of local clock for last write wins 

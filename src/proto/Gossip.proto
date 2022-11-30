@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+
+message Register {
+  string value = 1;
+  float ts = 2;
+}
+
+message Registers {
+  map<string, Register> registers = 1;
+}

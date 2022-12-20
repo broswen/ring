@@ -108,7 +108,7 @@ export class Node implements DurableObject {
             return jsonResponse(r, 200, this.id)
         } else if (request.method === 'PUT') {
             const data = await request.text()
-            const register = this.registers.set(key, data)
+            const register = this.registers.set(this.id, key, data)
             this.maybeGossip()
             this.state.storage?.put<Registers>('registers', this.registers.registers)
             return jsonResponse(register, 200, this.id)
@@ -118,6 +118,7 @@ export class Node implements DurableObject {
             const registers: RegistersPB = RegistersPB.decode(new Uint8Array(data))
             // convert into local interface
             const r = IRegistersToRegisters(registers)
+            console.log(JSON.stringify(r))
             this.registers.merge(r)
             this.state.storage?.put<Registers>('registers', this.registers.registers)
             this.kvDump()

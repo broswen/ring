@@ -85,8 +85,8 @@ export async function handler(
 		const obj = env.RING.get(id)
 		return obj.fetch(new Request(nodeUrl, {body: request.body, cf: {cacheTtl: 5}}))
 	} else if (request.method === 'PUT') {
-		// use key for node hash, write to the same node for a specific key
-		const nodeId = `${await rendezvousHash(key, config.clusterSize)}`
+		// use key + ip for node hash, reduces versionvector for a single ip/key
+		const nodeId = `${await rendezvousHash(key+ip, config.clusterSize)}`
 		const nodeUrl = nodeURL(nodeId, key)
 		const id = env.RING.idFromName(nodeId)
 		const obj = env.RING.get(id)

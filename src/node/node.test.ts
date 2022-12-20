@@ -20,7 +20,8 @@ describe('Node', () => {
         await storage.put<Registers>('registers', {
             'a': {
                 value: 'a',
-                ts: 1
+                ts: 1,
+                version: {'1': 1},
             }
         })
         const stub = env.RING.get(id)
@@ -41,22 +42,26 @@ describe('Node', () => {
         await storage.put<Registers>('registers', {
             'a': {
                 value: 'a',
-                ts: 1
+                ts: 1,
+                version: {'1': 1},
             },
             'b': {
                 value: 'b',
-                ts: 1
+                ts: 1,
+                version: {'1': 1},
             }
         })
         const stub = env.RING.get(id)
         const data = RegistersPB.encode({registers: {
                 'a': {
                     value: 'a',
-                    ts: 2
+                    ts: 2,
+                    version: {'1': 2},
                 },
                 'c': {
                     value: 'c',
-                    ts: 2
+                    ts: 2,
+                    version: {'1': 2},
                 }
             }}).finish()
 
@@ -65,19 +70,21 @@ describe('Node', () => {
         expect(await storage.get<Registers>('registers')).toEqual({
             'a': {
                 value: 'a',
-                ts: 2
+                ts: 2,
+                version: {'1': 2},
             },
             'b': {
                 value: 'b',
-                ts: 1
+                ts: 1,
+                version: {'1': 1},
             },
             'c': {
                 value: 'c',
-                ts: 2
+                ts: 2,
+                version: {'1': 2},
             }
         })
     })
-
 })
 
 describe('flush', () => {

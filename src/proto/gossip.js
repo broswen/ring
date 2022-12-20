@@ -23,6 +23,7 @@
          * @interface IRegister
          * @property {string|null} [value] Register value
          * @property {number|null} [ts] Register ts
+         * @property {Object.<string,number>|null} [version] Register version
          */
     
         /**
@@ -34,6 +35,7 @@
          * @param {IRegister=} [properties] Properties to set
          */
         function Register(properties) {
+            this.version = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
@@ -55,6 +57,14 @@
          * @instance
          */
         Register.prototype.ts = 0;
+    
+        /**
+         * Register version.
+         * @member {Object.<string,number>} version
+         * @memberof Register
+         * @instance
+         */
+        Register.prototype.version = $util.emptyObject;
     
         /**
          * Creates a new Register instance using the specified properties.
@@ -84,6 +94,9 @@
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.value);
             if (message.ts != null && Object.hasOwnProperty.call(message, "ts"))
                 writer.uint32(/* id 2, wireType 5 =*/21).float(message.ts);
+            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
+                for (var keys = Object.keys(message.version), i = 0; i < keys.length; ++i)
+                    writer.uint32(/* id 3, wireType 2 =*/26).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 5 =*/21).float(message.version[keys[i]]).ldelim();
             return writer;
         };
     
@@ -114,7 +127,7 @@
         Register.decode = function decode(reader, length) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Register();
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Register(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
                 switch (tag >>> 3) {
@@ -124,6 +137,29 @@
                     }
                 case 2: {
                         message.ts = reader.float();
+                        break;
+                    }
+                case 3: {
+                        if (message.version === $util.emptyObject)
+                            message.version = {};
+                        var end2 = reader.uint32() + reader.pos;
+                        key = "";
+                        value = 0;
+                        while (reader.pos < end2) {
+                            var tag2 = reader.uint32();
+                            switch (tag2 >>> 3) {
+                            case 1:
+                                key = reader.string();
+                                break;
+                            case 2:
+                                value = reader.float();
+                                break;
+                            default:
+                                reader.skipType(tag2 & 7);
+                                break;
+                            }
+                        }
+                        message.version[key] = value;
                         break;
                     }
                 default:
@@ -167,6 +203,14 @@
             if (message.ts != null && message.hasOwnProperty("ts"))
                 if (typeof message.ts !== "number")
                     return "ts: number expected";
+            if (message.version != null && message.hasOwnProperty("version")) {
+                if (!$util.isObject(message.version))
+                    return "version: object expected";
+                var key = Object.keys(message.version);
+                for (var i = 0; i < key.length; ++i)
+                    if (typeof message.version[key[i]] !== "number")
+                        return "version: number{k:string} expected";
+            }
             return null;
         };
     
@@ -186,6 +230,13 @@
                 message.value = String(object.value);
             if (object.ts != null)
                 message.ts = Number(object.ts);
+            if (object.version) {
+                if (typeof object.version !== "object")
+                    throw TypeError(".Register.version: object expected");
+                message.version = {};
+                for (var keys = Object.keys(object.version), i = 0; i < keys.length; ++i)
+                    message.version[keys[i]] = Number(object.version[keys[i]]);
+            }
             return message;
         };
     
@@ -202,6 +253,8 @@
             if (!options)
                 options = {};
             var object = {};
+            if (options.objects || options.defaults)
+                object.version = {};
             if (options.defaults) {
                 object.value = "";
                 object.ts = 0;
@@ -210,6 +263,12 @@
                 object.value = message.value;
             if (message.ts != null && message.hasOwnProperty("ts"))
                 object.ts = options.json && !isFinite(message.ts) ? String(message.ts) : message.ts;
+            var keys2;
+            if (message.version && (keys2 = Object.keys(message.version)).length) {
+                object.version = {};
+                for (var j = 0; j < keys2.length; ++j)
+                    object.version[keys2[j]] = options.json && !isFinite(message.version[keys2[j]]) ? String(message.version[keys2[j]]) : message.version[keys2[j]];
+            }
             return object;
         };
     

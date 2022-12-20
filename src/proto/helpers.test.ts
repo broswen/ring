@@ -9,22 +9,26 @@ describe('', () => {
             registers: {
                 'a': {
                     value: 'a',
-                    ts: 1
+                    ts: 1,
+                    version: {'a': 1},
                 },
                 'b': {
                     value: 'b',
-                    ts: 1
+                    ts: 1,
+                    version: {'a': 1},
                 }
             }
         })
         const exp: Registers = {
             'a': {
                 value: 'a',
-                ts: 1
+                ts: 1,
+                version: {'a': 1},
             },
             'b': {
                 value: 'b',
-                ts: 1
+                ts: 1,
+                version: {'a': 1},
             }
         }
         expect(IRegistersToRegisters(pb)).toEqual(exp)

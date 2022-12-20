@@ -8,6 +8,9 @@ export interface IRegister {
 
     /** Register ts */
     ts?: (number|null);
+
+    /** Register version */
+    version?: ({ [k: string]: number }|null);
 }
 
 /** Represents a Register. */
@@ -24,6 +27,9 @@ export class Register implements IRegister {
 
     /** Register ts. */
     public ts: number;
+
+    /** Register version. */
+    public version: { [k: string]: number };
 
     /**
      * Creates a new Register instance using the specified properties.

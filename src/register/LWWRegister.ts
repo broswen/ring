@@ -57,15 +57,16 @@ export class LWWRegister {
         let r: Register | undefined = undefined
         if (key in this.registers) {
             r = this.registers[key]
+            r.value = value
+            r.ts = new Date().getTime()
+            r.version = increment(r.version, id)
         } else {
             r = {
                 value: value,
                 ts: new Date().getTime(),
-                version: {}
+                version: {[id]: 1}
             }
         }
-
-        r.version = increment(r.version, id)
 
         this.registers[key] = r
         return r

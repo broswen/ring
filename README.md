@@ -43,6 +43,6 @@ During constant traffic, the keys are replicated between nodes consistently.
 - [ ] optimize gossip by sending only new data
 - [ ] find a better balance for gossiping during reads
 - [ ] analyze total cluster request traffic to scale clusterSize dynamically
-- [ ] use logical clock instead of local clock for last write wins 
-  - [x] shard based on key only and use local time, same node local time should be consistent
+- [x] use logical clock instead of local clock for last write wins 
   - use version vector with each register to accept writes at any node (handle dynamic cluster size?)
+  - resolve concurrent version vectors by using last written local timestamp (should use a better method of resolution)

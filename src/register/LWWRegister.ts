@@ -1,4 +1,4 @@
-import {compare, VersionVector, VersionVectorOrder} from "../versionvector/versionvector";
+import {compare, increment, VersionVector, VersionVectorOrder} from "../versionvector/versionvector";
 
 export interface Register {
     value: string
@@ -61,9 +61,11 @@ export class LWWRegister {
             r = {
                 value: value,
                 ts: new Date().getTime(),
-                version: {[id]: 1}
+                version: {}
             }
         }
+
+        r.version = increment(r.version, id)
 
         this.registers[key] = r
         return r

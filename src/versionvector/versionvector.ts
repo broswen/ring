@@ -19,6 +19,14 @@ export function intersection(v1: VersionVector, v2: VersionVector): string[] {
 
 // compare returns whether v1 dominates (comes after) v2
 export function compare(v1: VersionVector, v2: VersionVector): VersionVectorOrder {
+    // handle migration where versions might be null in local DO state
+    if (v1 && !v2) {
+        return VersionVectorOrder.AFTER
+    } else if (!v1 && v2) {
+        return VersionVectorOrder.BEFORE
+    } else if (!v1 && !v2) {
+        return VersionVectorOrder.CONCURRENT
+    }
     // get common node ids
     const commonIds = intersection(v1, v2)
     let v1Bigger = Object.keys(v1).length > commonIds.length

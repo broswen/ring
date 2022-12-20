@@ -8,7 +8,8 @@ export function IRegistersToRegisters(arg: IRegisters): Registers {
     for (let [k, v] of Object.entries(arg.registers)) {
         registers[k] = {
             value: v.value ?? '',
-            ts: v.ts ?? 0
+            ts: v.ts ?? 0,
+            version: v.version ?? {}
         }
     }
     return registers

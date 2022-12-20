@@ -1,7 +1,9 @@
+import {compare, VersionVector, VersionVectorOrder} from "../versionvector/versionvector";
 
 export interface Register {
     value: string
     ts: number
+    version: VersionVector
 }
 
 export interface Registers {
@@ -9,7 +11,16 @@ export interface Registers {
 }
 
 export function mergeRegister(a: Register, b: Register): Register {
-    if (a.ts >= b.ts) {
+    const order = compare(a.version, b.version)
+    if (order === VersionVectorOrder.AFTER) {
+        return a
+    } else if (order === VersionVectorOrder.BEFORE) {
+        return b
+    }
+
+    // if versions are concurrent resolve conflict with local write timestamp
+    // TODO resolve with something else
+    if (a.ts > b.ts) {
         return a
     }
     return b
@@ -42,11 +53,18 @@ export class LWWRegister {
         }
         return this.registers[key]
     }
-    set(key: string, value: string): Register {
-        const r = {
-            value: value,
-            ts: new Date().getTime()
+    set(id: string, key: string, value: string): Register {
+        let r: Register | undefined = undefined
+        if (key in this.registers) {
+            r = this.registers[key]
+        } else {
+            r = {
+                value: value,
+                ts: new Date().getTime(),
+                version: {[id]: 1}
+            }
         }
+
         this.registers[key] = r
         return r
     }

@@ -4,6 +4,7 @@ syntax = "proto3";
 message Register {
   string value = 1;
   float ts = 2;
+  map<string, float> version = 3;
 }
 
 message Registers {

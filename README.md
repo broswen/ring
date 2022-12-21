@@ -2,12 +2,18 @@
 
 This is a proof of concept for a LWW Register CRDT cluster running on Cloudflare Workers with Durable Objects.
 
-Individual Durable Objects receive reads and writes for keys. Nodes gossip with each other to converge the LWW Register CRDT data structure.
+Each Durable Object is a node that can accept reads or writes depending on how requests are routed.
 
-Writes directed to the same node (bottleneck) based on the key so local timestamps can be used instead of a [logical clock](https://en.wikipedia.org/wiki/Logical_clock).
+Requests are routed by a consistent hash of the request IP and key. This means that a client (IP) will always read their writes to the same key.
 
-Reads are distributed based on the key and ip but should eventually see the current data by gossiping with the cluster.
-Reads are also cached for a few seconds to reduce the load on the Durable Objects.
+All values are saved with a Version Vector to track the logical ordering of versions.
+
+Nodes gossip with each other to converge the LWW Register CRDT data structure using the Version Vector to resolve conflicts.
+
+Because all nodes can accept writes, there might be many concurrent versions existing for a key at a time due to slow gossiping.
+In the worst case scenario the local timestamp for the node that accepted the write is added to the Version Vector and used for Last Write Wins.
+
+Reads are cached for a few seconds to reduce the load on the Durable Objects.
 
 ![diagram](ring.drawio.png)
 
@@ -27,8 +33,38 @@ During constant traffic, the keys are replicated between nodes consistently.
 
 (14:08:00 is when the number of nodes was increased from 10 to 32)
 
-### TODO
 
+### Example data
+```json
+"9d": {
+    "value": "9d",
+    "ts": 1671591120159,
+    "version": {
+        "20": 14,
+        "26": 7
+    }
+},
+"ae": {
+    "value": "ae",
+    "ts": 1671591100416,
+    "version": {
+        "10": 6,
+        "25": 14
+    }
+},
+"4d": {
+    "value": "4d",
+    "ts": 1671591100416,
+    "version": {
+        "5": 15
+    }
+},
+```
+
+### TODO
+- [ ] move data from single DO Storage key
+  - [ ] individual DO Storage key per value
+  - [ ] how to gossip individual values without listing all storage keys
 - [ ] define types for
     - [x] config and default config
     - [x] env with namespaces
@@ -44,5 +80,5 @@ During constant traffic, the keys are replicated between nodes consistently.
 - [ ] find a better balance for gossiping during reads
 - [ ] analyze total cluster request traffic to scale clusterSize dynamically
 - [x] use logical clock instead of local clock for last write wins 
-  - use version vector with each register to accept writes at any node (handle dynamic cluster size?)
-  - resolve concurrent version vectors by using last written local timestamp (should use a better method of resolution)
+  - [x] use version vector with each register to accept writes at any node (handle dynamic cluster size?)
+  - [x] resolve concurrent version vectors by using last written local timestamp (should use a better method of resolution)

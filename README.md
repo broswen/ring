@@ -4,9 +4,9 @@ This is a proof of concept for a LWW Register CRDT cluster running on Cloudflare
 
 Each Durable Object is a node that can accept reads or writes depending on how requests are routed.
 
-Requests are routed by a consistent hash of the request IP and key. This means that a client (IP) will always read their writes to the same key.
+Requests are routed by a consistent hash of the key.
 
-All values are saved with a Version Vector to track the logical ordering of versions.
+All values are saved with a Version Vector to track the logical ordering of versions. This allows the cluster to scale and writes can be handle by different nodes.
 
 Nodes gossip with each other to converge the LWW Register CRDT data structure using the Version Vector to resolve conflicts.
 

@@ -76,9 +76,12 @@ During constant traffic, the keys are replicated between nodes consistently.
 - [x] handle ratelimited gossip and PATCH with flush
 - [x] handle gossip on GET requests to keep node updated
 - [x] optimize gossip with protocol buffer format
-- [ ] optimize gossip by sending only new data
 - [ ] find a better balance for gossiping during reads
+  - [ ] only read from director/replicas for key?
+- [ ] optimize gossip by sending only new data
+  - [ ] merkle trees, hashes?
 - [ ] analyze total cluster request traffic to scale clusterSize dynamically
+  - [ ] guarantee node data isn't lost when a node is partitioned due to cluster shrinking
 - [x] use logical clock instead of local clock for last write wins 
   - [x] use version vector with each register to accept writes at any node (handle dynamic cluster size?)
   - [x] resolve concurrent version vectors by using last written local timestamp (should use a better method of resolution)

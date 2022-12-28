@@ -80,8 +80,12 @@ During constant traffic, the keys are replicated between nodes consistently.
   - [ ] only read from director/replicas for key?
 - [ ] optimize gossip by sending only new data
   - [ ] merkle trees, hashes?
+  - [ ] track modified keys since last gossip and only transmit the modified keys (potentially broadcast?)
+- [ ] store key/values in their own Durable Object Storage keys
+  - [ ] must be able to gossip/replicate data without listing all keys
 - [ ] analyze total cluster request traffic to scale clusterSize dynamically
   - [ ] guarantee node data isn't lost when a node is partitioned due to cluster shrinking
 - [x] use logical clock instead of local clock for last write wins 
   - [x] use version vector with each register to accept writes at any node (handle dynamic cluster size?)
   - [x] resolve concurrent version vectors by using last written local timestamp (should use a better method of resolution)
+  - [ ] store multiple versions during concurrent writes, client can resolve conflict by specifying version to modify

@@ -62,13 +62,10 @@ During constant traffic, the keys are replicated between nodes consistently.
 ```
 
 ### TODO
-- [ ] move data from single DO Storage key
-  - [ ] individual DO Storage key per value
-  - [ ] how to gossip individual values without listing all storage keys
-- [ ] define types for
+- [x] define types for
     - [x] config and default config
     - [x] env with namespaces
-    - [ ] gossip message
+    - [x] gossip message
     - [x] register
     - [x] registers
 - [x] create functions to merge register and registers
@@ -78,6 +75,7 @@ During constant traffic, the keys are replicated between nodes consistently.
 - [x] optimize gossip with protocol buffer format
 - [ ] find a better balance for gossiping during reads
   - [ ] only read from director/replicas for key?
+  - [ ] gossip round-robin style to guarantee eventual consistency
 - [ ] optimize gossip by sending only new data
   - [ ] merkle trees, hashes?
   - [ ] track modified keys since last gossip and only transmit the modified keys (potentially broadcast?)

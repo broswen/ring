@@ -1,6 +1,6 @@
 import {Config, DefaultConfig, Env, getConfig} from "../index";
 import {LWWRegister, Registers} from "../register/LWWRegister";
-import {getNeighbors, nodeURL} from "../sharding/sharding";
+import {getNeighbors, getNeighborsRR, nodeURL} from "../sharding/sharding";
 import {Registers as RegistersPB} from "../proto/gossip"
 import {IRegistersToRegisters} from "../proto/helpers";
 
@@ -59,12 +59,15 @@ export class Node implements DurableObject {
     lastGossip: number = 0
     // the timestamp of the last dump to kv
     lastDump: number = 0
+    // the index to start gossiping at for round-robin
+    gossipIndex: number = 0
     constructor(state: DurableObjectState, env: Env) {
         this.state = state
         this.env = env
         this.state.blockConcurrencyWhile(async () => {
             this.registers = new LWWRegister(await this.state.storage?.get<Registers>('registers') ?? {})
             this.config = await getConfig(env)
+            this.gossipIndex = await this.state.storage?.get<number>('gossipIndex') ?? 0
         })
     }
 
@@ -118,7 +121,6 @@ export class Node implements DurableObject {
             const registers: RegistersPB = RegistersPB.decode(new Uint8Array(data))
             // convert into local interface
             const r = IRegistersToRegisters(registers)
-            console.log(JSON.stringify(r))
             this.registers.merge(r)
             this.state.storage?.put<Registers>('registers', this.registers.registers)
             this.kvDump()
@@ -159,7 +161,11 @@ export class Node implements DurableObject {
         // encode registers into protobuf gossip
         const registers = RegistersPB.encode({registers: this.registers.registers}).finish()
         // generate random list of neighbors to gossip with
-        const ids = getNeighbors(this.id, this.config.clusterSize)
+        // const ids = getNeighbors(this.id, this.config.clusterSize)
+        // gossip with neighbors in round-robin style
+        const ids = getNeighborsRR(this.id, this.config.clusterSize, this.gossipIndex)
+        // increase gossip index by the number of neighbors gossiped to
+        this.gossipIndex = (this.gossipIndex + ids.length) % this.config.clusterSize
         // create list of requests
         const promises = ids.map(async id => {
             const req = new Request(nodeURL(id), {body: registers, method: 'PATCH'})
@@ -173,6 +179,7 @@ export class Node implements DurableObject {
         })
         await Promise.allSettled(promises)
         this.state.storage?.put<Registers>('registers', this.registers.registers)
+        this.state.storage?.put<Number>('gossipIndex', this.gossipIndex)
         this.kvDump()
     }
 }

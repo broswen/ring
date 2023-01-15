@@ -75,7 +75,7 @@ During constant traffic, the keys are replicated between nodes consistently.
 - [x] optimize gossip with protocol buffer format
 - [ ] find a better balance for gossiping during reads
   - [ ] only read from director/replicas for key?
-  - [ ] gossip round-robin style to guarantee eventual consistency
+  - [x] gossip round-robin style to guarantee eventual consistency
 - [ ] optimize gossip by sending only new data
   - [ ] merkle trees, hashes?
   - [ ] track modified keys since last gossip and only transmit the modified keys (potentially broadcast?)

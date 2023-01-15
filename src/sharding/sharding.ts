@@ -17,6 +17,18 @@ export function getNeighbors(id: string, clusterSize: number): string[] {
     return neighbors
 }
 
+export function getNeighborsRR(id: string, clusterSize: number, start: number): string[] {
+    let neighbors: string[] = []
+    const amount: number =  Math.ceil(Math.log2(clusterSize))
+    for (let i = start; neighbors.length < amount; i++) {
+        if (i >= clusterSize) i = 0
+        if (`${i}` !== id) {
+            neighbors.push(`${i}`)
+        }
+    }
+    return neighbors
+}
+
 function shuffle(array: string[]): string[] {
     let currentIndex = array.length,  randomIndex;
 

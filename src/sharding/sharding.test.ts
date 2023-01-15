@@ -1,4 +1,4 @@
-import {hash, rank, rendezvousHash, nodeURL, getNeighbors} from "./sharding";
+import {hash, rank, rendezvousHash, nodeURL, getNeighbors, getNeighborsRR} from "./sharding";
 
 describe('shardURL', function () {
     test('should create url with shard name', () => {
@@ -43,5 +43,26 @@ describe('getNeighbors', () => {
         const neighbors = getNeighbors('1', 64)
         expect(neighbors.length).toBe(Math.ceil(Math.log2(64)))
         expect(neighbors).not.toContain('1')
+    })
+})
+
+describe('getNeighborsRR', () => {
+    test('generate all neighbors', () => {
+        expect(getNeighborsRR('0', 10, 0)).toEqual(['1','2','3','4'])
+    })
+    test('generate subset', () => {
+        expect(getNeighborsRR('4', 10, 3)).toEqual(['3','5','6','7'])
+    })
+    test('generate one', () => {
+        expect(getNeighborsRR('4', 10, 4)).toEqual(['5', '6', '7', '8'])
+    })
+    test('generate others', () => {
+        expect(getNeighborsRR('4', 10, 5)).toEqual(['5', '6', '7', '8'])
+    })
+    test('generate larger cluster', () => {
+        expect(getNeighborsRR('4', 32, 0)).toEqual(['0', '1', '2', '3', '5'])
+    })
+    test('handle wrap', () => {
+        expect(getNeighborsRR('0', 32, 30)).toEqual(['30', '31', '1', '2', '3'])
     })
 })

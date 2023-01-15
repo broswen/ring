@@ -77,18 +77,15 @@ export async function handler(
 		return obj.fetch(new Request('https://ring.broswen.com/'+ dump +'/?dump=true', {cf: {cacheTtl: 5}}))
 	}
 
+	// use key + ip for node hash, help distribute reads
+	const nodeId = `${await rendezvousHash(key, config.clusterSize)}`
+	const nodeUrl = nodeURL(nodeId, key)
+	const id = env.RING.idFromName(nodeId)
+	const obj = env.RING.get(id)
+
 	if (request.method === 'GET') {
-		// use key + ip for node hash, help distribute reads
-		const nodeId = `${await rendezvousHash(key, config.clusterSize)}`
-		const nodeUrl = nodeURL(nodeId, key)
-		const id = env.RING.idFromName(nodeId)
-		const obj = env.RING.get(id)
 		return obj.fetch(new Request(nodeUrl, {body: request.body, cf: {cacheTtl: 5}}))
 	} else if (request.method === 'PUT') {
-		const nodeId = `${await rendezvousHash(key, config.clusterSize)}`
-		const nodeUrl = nodeURL(nodeId, key)
-		const id = env.RING.idFromName(nodeId)
-		const obj = env.RING.get(id)
 		return obj.fetch(new Request(nodeUrl, {body: request.body, method: 'PUT'}))
 	}
 	return jsonResponse({error: 'not allowed'}, 405)

@@ -29,7 +29,7 @@ export interface Env {
 	NODE_DATA: WorkerAnalyticsNamespace
 	CLUSTER_DATA: WorkerAnalyticsNamespace
 	SENTRY_DSN: string
-	environment: string
+	ENVIRONMENT: string
 }
 
 export async function getConfig(env: Env): Promise<Config> {
@@ -60,7 +60,7 @@ export async function handler(
 		request,
 		context: ctx,
 		tracesSampleRate: 1.0,
-		environment: env.environment
+		environment: env.ENVIRONMENT
 	})
 	const config = await getConfig(env)
 	const url = new URL(request.url)

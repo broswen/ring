@@ -14,9 +14,10 @@
   },
   "private": true,
   "scripts": {
-    "start": "wrangler dev",
-    "publish": "wrangler publish",
-    "build": "npx wrangler publish --dry-run --outdir=dist",
+    "start": "wrangler dev -l",
+    "publish:staging": "wrangler publish -e staging",
+    "publish:production": "wrangler publish -e production",
+    "build": "npx wrangler publish --dry-run --minify --outdir=dist",
     "test": "npm run build && NODE_OPTIONS=--experimental-vm-modules npx jest",
     "proto": "pbjs -t static-module -l -o src/proto/gossip.js ./src/proto/Gossip.proto && pbts -o ./src/proto/gossip.d.ts src/proto/gossip.js"
   },

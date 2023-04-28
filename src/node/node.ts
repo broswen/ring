@@ -94,13 +94,11 @@ export class Node implements DurableObject {
             return jsonResponse(this.registers.registers, 200, this.id)
         }
 
-        if (this.env.ENVIRONMENT === 'production') {
-            this.env.NODE_DATA.writeDataPoint({
-                blobs: [this.id, request.method, key],
-                doubles: [Object.keys(this.registers.registers).length],
-                indexes: [this.id]
-            })
-        }
+        this.env.NODE_DATA?.writeDataPoint({
+            blobs: [this.id, request.method, key],
+            doubles: [Object.keys(this.registers.registers).length],
+            indexes: [this.id]
+        })
 
         if (request.method === 'GET') {
             const r = this.registers.get(key)

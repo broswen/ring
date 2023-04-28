@@ -1,23 +1,67 @@
 name = "ring"
 main = "src/index.ts"
 compatibility_date = "2022-11-01"
-workers_dev = false
 
 kv_namespaces = [
-    { binding = "CONFIG", id = "46861e4463a1436a8fe164b9aafbbf21", preview_id = "1f50a360fcff4cda89ab850a78b2fbfa"},
-    { binding = "NODE", id = "0e8107191fbd47d6b9ceb33b85c56b2c", preview_id = "11b6411cc5b042b59bda4905f4c5f347"},
+    { binding = "CONFIG", id = "11111111111111111111111111111111", preview_id = "11111111111111111111111111111111"},
+    { binding = "NODE", id = "11111111111111111111111111111111", preview_id = "11111111111111111111111111111111"},
 ]
 
-[durable_objects]
-bindings = [{name = "RING", class_name = "Node"}]
+durable_objects.bindings = [
+    {name = "RING", class_name = "Node"}
+]
 
 [vars]
-ENVIRONMENT = "production"
+ENVIRONMENT = "dev"
 
-[[unsafe.bindings]]
-type = "analytics_engine"
-name = "NODE_DATA"
-dataset = "RING_NODE_DATA"
+
+[env.staging]
+name = "ring-staging"
+
+routes = [
+    { pattern = "ring-staging.broswen.com", custom_domain = true }
+]
+
+kv_namespaces = [
+    { binding = "CONFIG", id = "8fe9649e78524b31959edd4df02c4b40"},
+    { binding = "NODE", id = "8a7cb02aef7240b2b89fd26608280c99"},
+]
+
+analytics_engine_datasets = [
+    { binding = "NODE_DATA", dataset = "ring-node-data-staging" }
+]
+
+durable_objects.bindings = [
+    {name = "RING", class_name = "Node"}
+]
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+#SENTRY_DSN
+
+[env.production]
+name = "ring-production"
+
+routes = [
+    { pattern = "ring.broswen.com", custom_domain = true }
+]
+
+kv_namespaces = [
+    { binding = "CONFIG", id = "8e086a7c0dfd4d8780e1613c240b251d"},
+    { binding = "NODE", id = "6a481c8078a44819b39d2b0532f3f218"},
+]
+
+analytics_engine_datasets = [
+    { binding = "NODE_DATA", dataset = "ring-node-data-staging" }
+]
+
+durable_objects.bindings = [
+    {name = "RING", class_name = "Node"}
+]
+
+[env.production.vars]
+ENVIRONMENT = "production"
+#SENTRY_DSN
 
 [[migrations]]
 tag = "v1" # Should be unique for each entry

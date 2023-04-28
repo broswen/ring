@@ -9,7 +9,7 @@ export interface Config {
 }
 
 export const DefaultConfig: Config = {
-	clusterSize: 10
+	clusterSize: 32
 }
 
 export interface WorkerAnalyticsNamespace {
@@ -26,9 +26,8 @@ export interface Env {
 	CONFIG: KVNamespace
 	NODE: KVNamespace
 	RING: DurableObjectNamespace
-	NODE_DATA: WorkerAnalyticsNamespace
-	CLUSTER_DATA: WorkerAnalyticsNamespace
-	SENTRY_DSN: string
+	NODE_DATA?: WorkerAnalyticsNamespace
+	SENTRY_DSN?: string
 	ENVIRONMENT: string
 }
 
@@ -62,31 +61,36 @@ export async function handler(
 		tracesSampleRate: 1.0,
 		environment: env.ENVIRONMENT
 	})
-	const config = await getConfig(env)
-	const url = new URL(request.url)
-	const key = url.pathname.slice(1)
-	const ip = request.headers.get('cf-connecting-ip')
-	if (key.length < 1) {
-		return jsonResponse({error: 'invalid key'}, 400)
-	}
+	try {
+		const config = await getConfig(env)
+		const url = new URL(request.url)
+		const key = url.pathname.slice(1)
+		const ip = request.headers.get('cf-connecting-ip')
+		if (key.length < 1) {
+			return jsonResponse({error: 'invalid key'}, 400)
+		}
 
-	const dump = url.searchParams.get('dump')
-	if (dump) {
-		const id = env.RING.idFromName(dump)
+		const dump = url.searchParams.get('dump')
+		if (dump) {
+			const id = env.RING.idFromName(dump)
+			const obj = env.RING.get(id)
+			return obj.fetch(new Request('https://ring.broswen.com/'+ dump +'/?dump=true', {cf: {cacheTtl: 5}}))
+		}
+
+		// use key + ip for node hash, help distribute reads
+		const nodeId = `${await rendezvousHash(key, config.clusterSize)}`
+		const nodeUrl = nodeURL(nodeId, key)
+		const id = env.RING.idFromName(nodeId)
 		const obj = env.RING.get(id)
-		return obj.fetch(new Request('https://ring.broswen.com/'+ dump +'/?dump=true', {cf: {cacheTtl: 5}}))
-	}
 
-	// use key + ip for node hash, help distribute reads
-	const nodeId = `${await rendezvousHash(key, config.clusterSize)}`
-	const nodeUrl = nodeURL(nodeId, key)
-	const id = env.RING.idFromName(nodeId)
-	const obj = env.RING.get(id)
-
-	if (request.method === 'GET') {
-		return obj.fetch(new Request(nodeUrl, {body: request.body, cf: {cacheTtl: 5}}))
-	} else if (request.method === 'PUT') {
-		return obj.fetch(new Request(nodeUrl, {body: request.body, method: 'PUT'}))
+		if (request.method === 'GET') {
+			return obj.fetch(new Request(nodeUrl, {body: request.body, cf: {cacheTtl: 5}}))
+		} else if (request.method === 'PUT') {
+			return obj.fetch(new Request(nodeUrl, {body: request.body, method: 'PUT'}))
+		}
+		return jsonResponse({error: 'not allowed'}, 405)
+	} catch (e) {
+		sentry.captureException(e)
+		return jsonResponse({error: 'internal server error'}, 500)
 	}
-	return jsonResponse({error: 'not allowed'}, 405)
 }

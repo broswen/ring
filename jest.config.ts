@@ -6,7 +6,6 @@ export default {
   },
   testEnvironment: 'miniflare',
   testEnvironmentOptions: {
-    bindings: { ENVIRONMENT: 'dev' },
     scriptPath: "dist/index.js",
     modules: true
   }

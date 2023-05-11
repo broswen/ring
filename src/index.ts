@@ -29,6 +29,7 @@ export interface Env {
 	NODE_DATA?: WorkerAnalyticsNamespace
 	SENTRY_DSN?: string
 	ENVIRONMENT: string
+    RELEASE?: string
 }
 
 export async function getConfig(env: Env): Promise<Config> {
@@ -59,7 +60,8 @@ export async function handler(
 		request,
 		context: ctx,
 		tracesSampleRate: 1.0,
-		environment: env.ENVIRONMENT
+		environment: env.ENVIRONMENT,
+		release: env.RELEASE
 	})
 	try {
 		const config = await getConfig(env)

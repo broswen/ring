@@ -16,8 +16,8 @@
   "private": true,
   "scripts": {
     "start": "wrangler dev -l",
-    "publish:staging": "wrangler publish -e staging --var RELEASE:\\\"$(git rev-parse HEAD)\\\"",
-    "publish:production": "wrangler publish -e production --var RELEASE:\\\"$(git rev-parse HEAD)\\\"",
+    "publish:staging": "wrangler publish -e staging --var RELEASE:\"$(git rev-parse HEAD)\"",
+    "publish:production": "wrangler publish -e production --var RELEASE:\"$(git rev-parse HEAD)\"",
     "build": "npx wrangler publish --dry-run --minify --outdir=dist",
     "test": "npm run build && NODE_OPTIONS=--experimental-vm-modules npx jest",
     "proto": "pbjs -t static-module -l -o src/proto/gossip.js ./src/proto/Gossip.proto && pbts -o ./src/proto/gossip.d.ts src/proto/gossip.js"
